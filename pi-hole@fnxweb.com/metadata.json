@@ -1,0 +1,8 @@
+{
+    "shell-version": ["3.38"],
+    "uuid": "pi-hole@fnxweb.com",
+    "name": "pi-hole",
+    "url" : "https://github.com/fnxweb/gnome-shell-pi-hole",
+    "description": "Status and basic controls of local Pi-Hole",
+    "version": 0
+}
