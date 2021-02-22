@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gnome-shell-extension-fnxweb-pi-hole">
+    <schema path="/org/gnome/shell/extensions/fnxweb-pi-hole/" id="org.gnome.shell.extensions.fnxweb-pi-hole">
+        <key type="s" name="url">
+            <default>'http://pi.hole/admin'</default>
+            <summary>URL of pi-hole</summary>
+            <description>URL of the local pi-hole admin page where the api.php can be found.</description>
+        </key>
+        <key type="s" name="api-key">
+            <default>''</default>
+            <summary>API key for the local pi-hole</summary>
+            <description>
+                The API key needed to access the local pi-hole (from http://pi.hole/admin/settings.php?tab=api and
+                show-api-token).
+            </description>
+        </key>
+        <key type="i" name="update-rate">
+            <default>20</default>
+            <summary>Update rate (in seconds)</summary>
+            <description>The rate in seconds at which the widget will update under nornmal circumstances.</description>
+        </key>
+        <key type="i" name="disable-time">
+            <default>20</default>
+            <summary>Period (in seconds) to pause pi-hole for.</summary>
+            <description>The number of seconds to pause pi-hole for when the Pause option is selected.</description>
+        </key>
+    </schema>
+</schemalist>
