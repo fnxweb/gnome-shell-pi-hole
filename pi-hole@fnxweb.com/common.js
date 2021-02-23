@@ -1,14 +1,11 @@
 // common
-
-// defaults
-var DEFAULT_URL = 'http://pi.hole/admin';
-var DEFAULT_UPDATE_RATE = 20;
-var DEFAULT_DISABLE_TIME = 20;
+const Gio = imports.gi.Gio;
 
 // settings labels
 var URL_SETTING = 'url';
-var UPDATE_RATE_SETTING = 'update-rate';
 var API_KEY_SETTING = 'api-key';
+var UPDATE_RATE_SETTING = 'update-rate';
+var DISABLE_TIME_SETTING = 'disable-time';
 
 
 // Access to settings

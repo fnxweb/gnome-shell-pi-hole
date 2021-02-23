@@ -4,5 +4,6 @@
     "name": "pi-hole",
     "url" : "https://github.com/fnxweb/gnome-shell-pi-hole",
     "description": "Status and basic controls of local Pi-Hole",
+    "settings-schema": "org.gnome.shell.extensions.fnxweb-pi-hole",
     "version": 0
 }

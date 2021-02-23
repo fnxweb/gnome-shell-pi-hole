@@ -14,12 +14,12 @@
                 show-api-token).
             </description>
         </key>
-        <key type="i" name="update-rate">
+        <key type="u" name="update-rate">
             <default>20</default>
             <summary>Update rate (in seconds)</summary>
             <description>The rate in seconds at which the widget will update under nornmal circumstances.</description>
         </key>
-        <key type="i" name="disable-time">
+        <key type="u" name="disable-time">
             <default>20</default>
             <summary>Period (in seconds) to pause pi-hole for.</summary>
             <description>The number of seconds to pause pi-hole for when the Pause option is selected.</description>

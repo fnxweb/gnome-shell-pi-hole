@@ -18,11 +18,18 @@ const IndicatorName = 'pi-hole';
 // Global storage
 let PiHoleExt = {
     // Extension metadata
-    Metadata : null,
+    Metadata : ExtensionUtils.getCurrentExtension(),
+
+    // Extension settings
+    Settings : null,
 
     // The button
     Button : null
 };
+
+
+// Common
+const Common = PiHoleExt.Metadata.imports.common;
 
 
 // Implement MythTV class
@@ -32,20 +39,19 @@ const PiHole = new Lang.Class(
     Extends : PanelMenu.Button,
 
     // Debug
-    Debug: true,
+    Debug: false,
 
-    // Timer period (seconds)
-    UpdateTime : 20,
+    // Status URL
+    Url: '',
 
     // API key
     ApiKey : '',
 
-    // Disable duration (seconds)
-    DisableTime : 20,
+    // Timer period (seconds)
+    UpdateTime : 0,
 
-    // Status URL
-    StatusUrl: 'http://pi.hole/admin',
-    // $StatusUrl/api.php?disable=$duration&auth=$auth
+    // Disable duration (seconds)
+    DisableTime : 0,
 
     // Updates
     StatusEvent: null,
@@ -61,27 +67,36 @@ const PiHole = new Lang.Class(
     EnableDisableButton: null,
     SettingsButton: null,
 
+    // Watch settings
+    SettingChangedHandlerIds: null,
+
 
     // ctor
     _init : function()
     {
+        // Core setup
         this.parent(null, IndicatorName);
-        this.actor.accessible_role = Atk.Role.TOGGLE_BUTTON;
-        PiHoleExt.Metadata = ExtensionUtils.getCurrentExtension();
 
-        // TEMP read auth from file until settings done
-        let auth_file = PiHoleExt.Metadata.path + "/auth";
-        if (GLib.file_test(auth_file, GLib.FileTest.EXISTS))
+        // Settings
+        let settings = Common.getSettings( PiHoleExt.Metadata );
+        this.Url = settings.get_string( Common.URL_SETTING );
+        this.ApiKey = settings.get_string( Common.API_KEY_SETTING );
+        this.UpdateTime = settings.get_uint( Common.UPDATE_RATE_SETTING );
+        if (this.UpdateTime < 5)
+            this.UpdateTime = 5;
+        this.DisableTime = settings.get_uint( Common.DISABLE_TIME_SETTING );
+        if (this.DisableTime < 1)
+            this.DisableTime = 1;
+        PiHoleExt.Settings = settings;
+
+        // Diag
+        if (this.Debug)
         {
-            this.dprint("Found auth file");
-            let auth = imports.gi.Shell.get_file_contents_utf8_sync(auth_file).split(/\n/);
-            this.ApiKey = auth[0];
+            this.dprint("Url: " + this.Url);
+            this.dprint("ApiKey: " + this.ApiKey);
+            this.dprint("UpdateTime: " + this.UpdateTime.toString());
+            this.dprint("DisableTime: " + this.DisableTime.toString());
         }
-        else
-        {
-            this.dprint("NOT FOUND auth file");
-        }
-        this.dprint("Using auth '" + this.ApiKey + "'");
 
         // Create a Soup session with which to do requests
         this.SoupSession = new Soup.SessionAsync();
@@ -102,6 +117,7 @@ const PiHole = new Lang.Class(
 
 
         // Add status popup
+
         // .. status
         let box = new St.BoxLayout({style_class:'pihole-heading-row'});
         let label = new St.Label({style_class:'pihole-label', text:"Pi-Hole Status:  "});
@@ -109,9 +125,11 @@ const PiHole = new Lang.Class(
         this.StatusField = new St.Label({text:this.Status});
         box.add_actor(this.StatusField);
         this.addMenuItem(box);
+
         // .. sep
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        // .. buttons        
+
+        // .. control buttons        
         this.PauseButton = new PopupMenu.PopupMenuItem("Pause temporarily");
         this.PauseButton.connect('activate', Lang.bind(this, function()  {
             this.onPauseButton();
@@ -125,8 +143,10 @@ const PiHole = new Lang.Class(
             return 0;
         }));
         this.menu.addMenuItem(this.EnableDisableButton);
+
         // .. sep
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
         // .. settings
         this.SettingsButton = new PopupMenu.PopupMenuItem("Settings");
         this.SettingsButton.connect('activate', Lang.bind(this, function()  {
@@ -135,8 +155,24 @@ const PiHole = new Lang.Class(
         }));
         this.menu.addMenuItem(this.SettingsButton);
 
-        // Initial status (and starts timer for next)
+        // Get initial status (starts timer for next)
         this.getPiHoleStatus();
+
+        // Watch for settings changes
+        this.SettingChangedHandlerIds = [
+            PiHoleExt.Settings.connect("changed::" + Common.URL_SETTING, Lang.bind(this, function() {
+                PiHoleExt.Button.Url = PiHoleExt.Settings.get_string( Common.URL_SETTING );
+            })),
+            PiHoleExt.Settings.connect("changed::" + Common.API_KEY_SETTING, Lang.bind(this, function() {
+                PiHoleExt.Button.ApiKey = PiHoleExt.Settings.get_string( Common.API_KEY_SETTING);
+            })),
+            PiHoleExt.Settings.connect("changed::" + Common.UPDATE_RATE_SETTING, Lang.bind(this, function() {
+                PiHoleExt.Button.UpdateTime = PiHoleExt.Settings.get_uint( Common.UPDATE_RATE_SETTING );
+            })),
+            PiHoleExt.Settings.connect("changed::" + Common.DISABLE_TIME_SETTING, Lang.bind(this, function() {
+                PiHoleExt.Button.DisableTime = PiHoleExt.Settings.get_uint( Common.DISABLE_TIME_SETTING );
+            }))
+        ];
     },
 
 
@@ -204,13 +240,18 @@ const PiHole = new Lang.Class(
         {
             // Trigger request
             let me = this;
-            let url = this.StatusUrl + "/api.php?status&auth=" + this.ApiKey;
+            let url = this.Url + "/api.php?status&auth=" + this.ApiKey;
             let request = Soup.Message.new('GET', url);
             this.SoupSession.queue_message(request, function(soup, message) {
                 if (message.status_code == 200)
+                {
                     me.processPiHoleStatus(request.response_body.data);
+                }
                 else
-                    me.dprint("error retrieving status: " + message.status_code);
+                {
+                    me.eprint("error retrieving status: " + message.status_code);
+                    me.newPiHoleStatus("unknown");
+                }
             });
 
             // Now do it again in a bit
@@ -276,23 +317,29 @@ const PiHole = new Lang.Class(
         {
             // Trigger request
             let me = this;
-            let url = this.StatusUrl + "/api.php?" + op + "&auth=" + this.ApiKey;
+            let url = this.Url + "/api.php?" + op + "&auth=" + this.ApiKey;
             let request = Soup.Message.new('GET', url);
             this.SoupSession.queue_message(request, function(soup, message) {
                 if (message.status_code == 200)
+                {
                     me.processPiHoleStatus(request.response_body.data);
+                }
                 else
-                    me.dprint("error requesting disable: " + message.status_code);
+                {
+                    me.eprint("error requesting disable: " + message.status_code);
+                    me.newPiHoleStatus("unknown");
+                }
             });
         }
         catch (err)
         {
             this.eprint("exception requesting enable/disable: " + err);
+            this.newPiHoleStatus("unknown");
         }
     },
 
 
-    // Read status
+    // Handle status
     processPiHoleStatus: function(data)
     {
         this.dprint("processing status");
@@ -303,12 +350,22 @@ const PiHole = new Lang.Class(
         {
             // Process results string
             var obj = JSON.parse( data.toString() );
-            this.Status = obj.status;
+            this.newPiHoleStatus( obj.status );
         }
         catch (err)
         {
             this.eprint("exception processing status [" + data.toString() + "]: " + err);
+            this.newPiHoleStatus("unknown");
         }
+    },
+
+
+    // New status
+    newPiHoleStatus: function(newstatus)
+    {
+        if (newstatus === undefined)
+            newstatus = "undefined";
+        this.Status = newstatus;
 
         // Update statuses
         this.dprint("got status " + this.Status);
@@ -319,6 +376,13 @@ const PiHole = new Lang.Class(
         else
             this.EnableDisableButton.label.set_text("Enable");
     },
+
+
+    // Open settings
+    onSettingsButton: function()
+    {
+        imports.misc.util.spawn(['gnome-extensions', 'prefs', PiHoleExt.Metadata.uuid]);
+    }
 })
 
 
@@ -339,6 +403,12 @@ function enable()
 // Turn off
 function disable()
 {
+    // Disconnects the setting listeners
+    for (let id in this.SettingChangedHandlerIds)
+        this._settings.disconnect(this.SettingChangedHandlerIds[id]);
+    this.SettingChangedHandlerIds = null;
+
+    // Finish off
     Mainloop.source_remove(PiHoleExt.Button.StatusEvent);
     PiHoleExt.Button.
     PiHoleExt.Button.destroy();
