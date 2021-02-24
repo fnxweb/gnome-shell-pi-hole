@@ -410,7 +410,6 @@ function disable()
 
     // Finish off
     Mainloop.source_remove(PiHoleExt.Button.StatusEvent);
-    PiHoleExt.Button.
     PiHoleExt.Button.destroy();
     PiHoleExt.Button = null;
 }
