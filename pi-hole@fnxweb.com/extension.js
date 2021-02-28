@@ -30,6 +30,8 @@ let PiHoleExt = {
 
 // Common
 const Common = PiHoleExt.Metadata.imports.common;
+const Gettext = imports.gettext.domain( PiHoleExt.Metadata.metadata['gettext-domain'] );
+const _ = Gettext.gettext;
 
 
 // Implement MythTV class
@@ -76,6 +78,7 @@ const PiHole = new Lang.Class(
     {
         // Core setup
         this.parent(null, IndicatorName);
+        Common.initTranslations( PiHoleExt.Metadata );
 
         // Settings
         let settings = Common.getSettings( PiHoleExt.Metadata );
@@ -120,7 +123,7 @@ const PiHole = new Lang.Class(
 
         // .. status
         let box = new St.BoxLayout({style_class:'pihole-heading-row'});
-        let label = new St.Label({style_class:'pihole-label', text:"Pi-Hole Status:  "});
+        let label = new St.Label({style_class:'pihole-label', text:_("Pi-Hole Status") + ":  "});
         box.add_actor(label);
         this.StatusField = new St.Label({text:this.Status});
         box.add_actor(this.StatusField);
@@ -130,14 +133,14 @@ const PiHole = new Lang.Class(
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         // .. control buttons        
-        this.PauseButton = new PopupMenu.PopupMenuItem("Pause temporarily");
+        this.PauseButton = new PopupMenu.PopupMenuItem(_("Pause temporarily"), {style_class:"pihole-indent"});
         this.PauseButton.connect('activate', Lang.bind(this, function()  {
             this.onPauseButton();
             return 0;
         }));
         this.menu.addMenuItem(this.PauseButton);
         //
-        this.EnableDisableButton = new PopupMenu.PopupMenuItem("Disable");
+        this.EnableDisableButton = new PopupMenu.PopupMenuItem(_("Disable"), {style_class:"pihole-indent"});
         this.EnableDisableButton.connect('activate', Lang.bind(this, function()  {
             this.onEnableDisableButton();
             return 0;
@@ -148,7 +151,7 @@ const PiHole = new Lang.Class(
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         // .. settings
-        this.SettingsButton = new PopupMenu.PopupMenuItem("Settings");
+        this.SettingsButton = new PopupMenu.PopupMenuItem(_("Settings"), {style_class:"pihole-indent"});
         this.SettingsButton.connect('activate', Lang.bind(this, function()  {
             this.onSettingsButton();
             return 0;
