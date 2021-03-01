@@ -9,7 +9,7 @@ Download the ZIP file (from the link above), and then install it from the GNOME
 *Advanced Settings* application's “Shell Extensions/Install Shell Extension”
 function.
 
-Alternatively, unpack **pi-hole@fnxweb.com** as the directory
+Alternatively, unpack **pi-hole<span>@</span>fnxweb.com** as the directory
 ***~/.local/share/gnome-shell/extensions/pi-hole@fnxweb.com***
 alongside any other extensions you have.
 
