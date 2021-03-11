@@ -5,6 +5,12 @@ GNOME Shell extension to report Pi-Hole status.  Licensed under the GPL V3.
 
 ### Installation
 
+#### The easy way
+
+Install it from the [GNOME Extensions website](https://extensions.gnome.org/extension/4051/pi-hole/).
+
+#### The difficult way
+
 Download the ZIP file (from the link above), and then install it from the GNOME
 *Advanced Settings* application's “Shell Extensions/Install Shell Extension”
 function.
@@ -20,8 +26,14 @@ enable the extension via the **advanced-settings** GUI.
 ### Main functionality
 
 This extension polls your Pi-Hole server periodically (every 20 seconds by
-default), and shows the current status via its icon.  Its menu allows you
-to temporarily pause (default for 20 seconds), disable or enable the Pi-Hole.
+default), and shows the current status via its icon:
+| Icon | Meaning |
+| --- | --- |
+| ![enabled](https://github.com/fnxweb/gnome-shell-pi-hole/raw/master/pi-hole%40fnxweb.com/icons/pi-hole-symbolic.svg) | Enabled |
+| ![enabled](https://github.com/fnxweb/gnome-shell-pi-hole/raw/master/pi-hole%40fnxweb.com/icons/pi-hole-disabled-symbolic.svg) | Disabled |
+| ![enabled](https://github.com/fnxweb/gnome-shell-pi-hole/raw/master/pi-hole%40fnxweb.com/icons/pi-hole-unknown-symbolic.svg) | Unknown / error |
+
+Its menu allows you to temporarily pause (default for 20 seconds), disable or enable the Pi-Hole.
 
 ![Screenshot](https://github.com/fnxweb/gnome-shell-pi-hole/raw/master/images/main-menu.png)
 
