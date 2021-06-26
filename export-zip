@@ -1,4 +1,4 @@
 #!/bin/bash
-[ -d pi-hole@fnxweb,.com ]  &&  cd pi-hole@fnxweb.com
+[ -d pi-hole@fnxweb.com ]  &&  cd pi-hole@fnxweb.com
 git archive --format=zip -o /tmp/pihole-extension.zip master
 # .. from inside pi-hole@fnxweb.com

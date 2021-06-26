@@ -26,26 +26,23 @@ function init()
 function buildPrefsWidget()
 {
     // Create
-    let prefs = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL, border_width: 8, margin: 8 });
-    prefs.set_spacing(4);
+    let prefs = new Gtk.Box({
+        orientation: Gtk.Orientation.VERTICAL,
+        margin_top: 8,
+        margin_bottom: 8
+    });
+    prefs.set_spacing(8);
 
     // Settings
     {
-        let widget = new Gtk.Entry({ width_chars: 50, tooltip_text: _("URL of pi-hole admin page for API access") });
-        widget.set_text( settings.get_string( Common.URL_SETTING ) );
-        widget.connect( 'changed', function() {
-            settings.set_string( Common.URL_SETTING, widget.get_text() );
+        let widget = new Gtk.SpinButton({ tooltip_text: _("How long to pause Pi-Hole for when it is paused") });
+        widget.set_range( 1, 900 );
+        widget.set_increments( 1, 5 );
+        widget.set_value( settings.get_uint( Common.DISABLE_TIME_SETTING ) );
+        widget.connect( 'value-changed', function() {
+            settings.set_uint( Common.DISABLE_TIME_SETTING, widget.get_value() );
         });
-        _addSetting( prefs, _("Pi-Hole URL"), widget );
-    }
-
-    {
-        let widget = new Gtk.Entry({ width_chars: 50, tooltip_text: _("API key of pi-hole from settings/api page") });
-        widget.set_text( settings.get_string( Common.API_KEY_SETTING ) );
-        widget.connect( 'changed', function() {
-            settings.set_string( Common.API_KEY_SETTING, widget.get_text() );
-        });
-        _addSetting( prefs, _("API key"), widget );
+        _addSetting( prefs, _("Pause time (seconds)"), widget );
     }
 
     {
@@ -60,18 +57,24 @@ function buildPrefsWidget()
     }
 
     {
-        let widget = new Gtk.SpinButton({ tooltip_text: _("How long to pause Pi-Hole for when it is paused") });
-        widget.set_range( 1, 900 );
-        widget.set_increments( 1, 5 );
-        widget.set_value( settings.get_uint( Common.DISABLE_TIME_SETTING ) );
-        widget.connect( 'value-changed', function() {
-            settings.set_uint( Common.DISABLE_TIME_SETTING, widget.get_value() );
+        let widget = new Gtk.Entry({ width_chars: 50, tooltip_text: _("API key of pi-hole from settings/api page") });
+        widget.set_text( settings.get_string( Common.API_KEY_SETTING ) );
+        widget.connect( 'changed', function() {
+            settings.set_string( Common.API_KEY_SETTING, widget.get_text() );
         });
-        _addSetting( prefs, _("Pause time (seconds)"), widget );
+        _addSetting( prefs, _("API key"), widget );
+    }
+
+    {
+        let widget = new Gtk.Entry({ width_chars: 50, tooltip_text: _("URL of pi-hole admin page for API access") });
+        widget.set_text( settings.get_string( Common.URL_SETTING ) );
+        widget.connect( 'changed', function() {
+            settings.set_string( Common.URL_SETTING, widget.get_text() );
+        });
+        _addSetting( prefs, _("Pi-Hole URL"), widget );
     }
 
     // Done
-    prefs.show_all();
     return prefs;
 }
 
@@ -79,11 +82,20 @@ function buildPrefsWidget()
 // Add a labelled setting
 function _addSetting( prefs, labeltext, widget )
 {
-    let box = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL });
-    let label = new Gtk.Label({ label: labeltext, xalign: 0 });
+    let box = new Gtk.Box({
+        orientation: Gtk.Orientation.HORIZONTAL,
+        margin_start: 8,
+        margin_end: 8
+    });
+    let label = new Gtk.Label({
+        label: labeltext,
+        xalign: 0,
+        halign: Gtk.Align.FILL,
+        hexpand: true
+    });
 
-    box.pack_start( label, true, true, 0 );
-    box.add( widget );
+    box.append( label );
+    box.append( widget );
 
-    prefs.pack_start( box, false, false, 0 );
+    prefs.prepend( box );
 }
