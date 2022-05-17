@@ -7,23 +7,12 @@ const Mainloop = imports.mainloop;
 const IndicatorName = 'pi-hole';
 
 
-// Global storage
-let PiHoleExt = {
-    // Extension metadata
-    Metadata : ExtensionUtils.getCurrentExtension(),
-
-    // Extension settings
-    Settings : null,
-
-    // The button
-    Button : null
-};
-
-
 // Common
-const Common = PiHoleExt.Metadata.imports.common;
-const Gettext = imports.gettext.domain( PiHoleExt.Metadata.metadata['gettext-domain'] );
+const PiHoleExtMetadata = ExtensionUtils.getCurrentExtension();
+const Common = PiHoleExtMetadata.imports.common;
+const Gettext = imports.gettext.domain( PiHoleExtMetadata.metadata['gettext-domain'] );
 const _ = Gettext.gettext;
+let PiHoleExtButton = null;
 
 
 // Implement MythTV class
@@ -35,10 +24,8 @@ class PiHole extends panelMenu.Button
     {
         // Core setup
         super._init( null, IndicatorName );
-        Common.initTranslations( PiHoleExt.Metadata );
-
-        this.Name    = IndicatorName;
-        this.Extends = panelMenu.Button;
+        Common.initTranslations( PiHoleExtMetadata );
+        this.Name = IndicatorName;
 
         // Debug
         this.Debug= false;
@@ -73,16 +60,15 @@ class PiHole extends panelMenu.Button
         this.SettingChangedHandlerIds= null;
 
         // Settings
-        let settings = Common.getSettings( PiHoleExt.Metadata );
-        this.Url = settings.get_string( Common.URL_SETTING );
-        this.ApiKey = settings.get_string( Common.API_KEY_SETTING );
-        this.UpdateTime = settings.get_uint( Common.UPDATE_RATE_SETTING );
+        this.Settings = Common.getSettings( PiHoleExtMetadata );
+        this.Url = this.Settings.get_string( Common.URL_SETTING );
+        this.ApiKey = this.Settings.get_string( Common.API_KEY_SETTING );
+        this.UpdateTime = this.Settings.get_uint( Common.UPDATE_RATE_SETTING );
         if (this.UpdateTime < 5)
             this.UpdateTime = 5;
-        this.DisableTime = settings.get_uint( Common.DISABLE_TIME_SETTING );
+        this.DisableTime = this.Settings.get_uint( Common.DISABLE_TIME_SETTING );
         if (this.DisableTime < 1)
             this.DisableTime = 1;
-        PiHoleExt.Settings = settings;
 
         // Diag
         if (this.Debug)
@@ -155,17 +141,17 @@ class PiHole extends panelMenu.Button
 
         // Watch for settings changes
         this.SettingChangedHandlerIds = [
-            PiHoleExt.Settings.connect("changed::" + Common.URL_SETTING, () => {
-                PiHoleExt.Button.Url = PiHoleExt.Settings.get_string( Common.URL_SETTING );
+            this.Settings.connect("changed::" + Common.URL_SETTING, () => {
+                PiHoleExtButton.Url = this.Settings.get_string( Common.URL_SETTING );
             }),
-            PiHoleExt.Settings.connect("changed::" + Common.API_KEY_SETTING, ()  =>{
-                PiHoleExt.Button.ApiKey = PiHoleExt.Settings.get_string( Common.API_KEY_SETTING);
+            this.Settings.connect("changed::" + Common.API_KEY_SETTING, () => {
+                PiHoleExtButton.ApiKey = this.Settings.get_string( Common.API_KEY_SETTING);
             }),
-            PiHoleExt.Settings.connect("changed::" + Common.UPDATE_RATE_SETTING, ()  => {
-                PiHoleExt.Button.UpdateTime = PiHoleExt.Settings.get_uint( Common.UPDATE_RATE_SETTING );
+            this.Settings.connect("changed::" + Common.UPDATE_RATE_SETTING, () => {
+                PiHoleExtButton.UpdateTime = this.Settings.get_uint( Common.UPDATE_RATE_SETTING );
             }),
-            PiHoleExt.Settings.connect("changed::" + Common.DISABLE_TIME_SETTING, () => {
-                PiHoleExt.Button.DisableTime = PiHoleExt.Settings.get_uint( Common.DISABLE_TIME_SETTING );
+            this.Settings.connect("changed::" + Common.DISABLE_TIME_SETTING, () => {
+                PiHoleExtButton.DisableTime = this.Settings.get_uint( Common.DISABLE_TIME_SETTING );
             })
         ];
     }
@@ -214,7 +200,7 @@ class PiHole extends panelMenu.Button
     // Get custom icon from theme or file
     getCustomIcon(icon_name)
     {
-        let icon_path = PiHoleExt.Metadata.dir.get_child('icons').get_child( icon_name + ".svg" ).get_path();
+        let icon_path = PiHoleExtMetadata.dir.get_child('icons').get_child( icon_name + ".svg" ).get_path();
         let theme = Gtk.IconTheme.get_default();
         if (theme)
         {
@@ -270,7 +256,7 @@ class PiHole extends panelMenu.Button
         this.enableDisable( "disable=" + this.DisableTime.toString() );
 
         // Now ask for status again a second after it should be re-enabled
-        Mainloop.source_remove(PiHoleExt.Button.StatusEvent);
+        Mainloop.source_remove(PiHoleExtButton.StatusEvent);
         this.StatusEvent = GLib.timeout_add_seconds(0, this.DisableTime + 1, () => {
             this.getPiHoleStatus();
             return 0;
@@ -296,7 +282,7 @@ class PiHole extends panelMenu.Button
         this.enableDisable( op );
 
         // Restart status request cycle since we just got an up-to-date status
-        Mainloop.source_remove(PiHoleExt.Button.StatusEvent);
+        Mainloop.source_remove(PiHoleExtButton.StatusEvent);
         this.StatusEvent = GLib.timeout_add_seconds(0, this.UpdateTime, () => {
             this.getPiHoleStatus();
             return 0;
@@ -376,7 +362,7 @@ class PiHole extends panelMenu.Button
     // Open settings
     onSettingsButton()
     {
-        imports.misc.util.spawn(['gnome-extensions', 'prefs', PiHoleExt.Metadata.uuid]);
+        ExtensionUtils.openPrefs();
     }
 });
 
@@ -390,8 +376,8 @@ function init()
 // Turn on
 function enable()
 {
-    PiHoleExt.Button = new PiHole();
-    main.panel.addToStatusArea( IndicatorName, PiHoleExt.Button );
+    PiHoleExtButton = new PiHole();
+    main.panel.addToStatusArea( IndicatorName, PiHoleExtButton );
 }
 
 
@@ -404,7 +390,7 @@ function disable()
     this.SettingChangedHandlerIds = null;
 
     // Finish off
-    Mainloop.source_remove(PiHoleExt.Button.StatusEvent);
-    PiHoleExt.Button.destroy();
-    PiHoleExt.Button = null;
+    Mainloop.source_remove(PiHoleExtButton.StatusEvent);
+    PiHoleExtButton.destroy();
+    PiHoleExtButton = null;
 }
