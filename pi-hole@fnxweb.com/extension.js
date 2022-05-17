@@ -24,7 +24,7 @@ class PiHole extends panelMenu.Button
     {
         // Core setup
         super._init( null, IndicatorName );
-        Common.initTranslations( PiHoleExtMetadata );
+        ExtensionUtils.initTranslations();
         this.Name = IndicatorName;
 
         // Debug
@@ -60,7 +60,7 @@ class PiHole extends panelMenu.Button
         this.SettingChangedHandlerIds= null;
 
         // Settings
-        this.Settings = Common.getSettings( PiHoleExtMetadata );
+        this.Settings = ExtensionUtils.getSettings();
         this.Url = this.Settings.get_string( Common.URL_SETTING );
         this.ApiKey = this.Settings.get_string( Common.API_KEY_SETTING );
         this.UpdateTime = this.Settings.get_uint( Common.UPDATE_RATE_SETTING );

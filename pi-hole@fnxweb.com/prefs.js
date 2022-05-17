@@ -13,7 +13,7 @@ const Common = Metadata.imports.common;
 // Prep
 function init()
 {
-    Common.initTranslations(Metadata);
+    ExtensionUtils.initTranslations();
 }
 
 
@@ -21,7 +21,7 @@ function init()
 function buildPrefsWidget()
 {
     // Create
-    let settings = Common.getSettings(Metadata);
+    let settings = ExtensionUtils.getSettings();
     let prefs = new Gtk.Box({
         orientation: Gtk.Orientation.VERTICAL,
         margin_top: 8,
