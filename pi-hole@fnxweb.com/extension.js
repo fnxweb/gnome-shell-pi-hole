@@ -2,7 +2,6 @@
 const { Atk, Gio, GLib, GObject, Gtk, Soup, St } = imports.gi;
 const { main, panelMenu, popupMenu } = imports.ui;
 const ExtensionUtils = imports.misc.extensionUtils
-const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 
 const IndicatorName = 'pi-hole';
@@ -127,17 +126,17 @@ class PiHole extends panelMenu.Button
 
         // .. control buttons        
         this.PauseButton = new popupMenu.PopupMenuItem(_("Pause temporarily"), {style_class:"pihole-indent"});
-        this.PauseButton.connect('activate', Lang.bind(this, function()  {
+        this.PauseButton.connect('activate', () => {
             this.onPauseButton();
             return 0;
-        }));
+        });
         this.menu.addMenuItem(this.PauseButton);
         //
         this.EnableDisableButton = new popupMenu.PopupMenuItem(_("Disable"), {style_class:"pihole-indent"});
-        this.EnableDisableButton.connect('activate', Lang.bind(this, function()  {
+        this.EnableDisableButton.connect('activate', () => {
             this.onEnableDisableButton();
             return 0;
-        }));
+        });
         this.menu.addMenuItem(this.EnableDisableButton);
 
         // .. sep
@@ -145,10 +144,10 @@ class PiHole extends panelMenu.Button
 
         // .. settings
         this.SettingsButton = new popupMenu.PopupMenuItem(_("Settings"), {style_class:"pihole-indent"});
-        this.SettingsButton.connect('activate', Lang.bind(this, function()  {
+        this.SettingsButton.connect('activate', () => {
             this.onSettingsButton();
             return 0;
-        }));
+        });
         this.menu.addMenuItem(this.SettingsButton);
 
         // Get initial status (starts timer for next)
@@ -156,18 +155,18 @@ class PiHole extends panelMenu.Button
 
         // Watch for settings changes
         this.SettingChangedHandlerIds = [
-            PiHoleExt.Settings.connect("changed::" + Common.URL_SETTING, Lang.bind(this, function() {
+            PiHoleExt.Settings.connect("changed::" + Common.URL_SETTING, () => {
                 PiHoleExt.Button.Url = PiHoleExt.Settings.get_string( Common.URL_SETTING );
-            })),
-            PiHoleExt.Settings.connect("changed::" + Common.API_KEY_SETTING, Lang.bind(this, function() {
+            }),
+            PiHoleExt.Settings.connect("changed::" + Common.API_KEY_SETTING, ()  =>{
                 PiHoleExt.Button.ApiKey = PiHoleExt.Settings.get_string( Common.API_KEY_SETTING);
-            })),
-            PiHoleExt.Settings.connect("changed::" + Common.UPDATE_RATE_SETTING, Lang.bind(this, function() {
+            }),
+            PiHoleExt.Settings.connect("changed::" + Common.UPDATE_RATE_SETTING, ()  => {
                 PiHoleExt.Button.UpdateTime = PiHoleExt.Settings.get_uint( Common.UPDATE_RATE_SETTING );
-            })),
-            PiHoleExt.Settings.connect("changed::" + Common.DISABLE_TIME_SETTING, Lang.bind(this, function() {
+            }),
+            PiHoleExt.Settings.connect("changed::" + Common.DISABLE_TIME_SETTING, () => {
                 PiHoleExt.Button.DisableTime = PiHoleExt.Settings.get_uint( Common.DISABLE_TIME_SETTING );
-            }))
+            })
         ];
     }
 
@@ -251,10 +250,10 @@ class PiHole extends panelMenu.Button
             });
 
             // Now do it again in a bit
-            this.StatusEvent = GLib.timeout_add_seconds(0, this.UpdateTime, Lang.bind(this, function()  {
+            this.StatusEvent = GLib.timeout_add_seconds(0, this.UpdateTime, () => {
                 this.getPiHoleStatus();
                 return 0;
-            }));
+            });
         }
         catch (err)
         {
@@ -272,10 +271,10 @@ class PiHole extends panelMenu.Button
 
         // Now ask for status again a second after it should be re-enabled
         Mainloop.source_remove(PiHoleExt.Button.StatusEvent);
-        this.StatusEvent = GLib.timeout_add_seconds(0, this.DisableTime + 1, Lang.bind(this, function()  {
+        this.StatusEvent = GLib.timeout_add_seconds(0, this.DisableTime + 1, () => {
             this.getPiHoleStatus();
             return 0;
-        }));
+        });
     }
 
 
@@ -298,10 +297,10 @@ class PiHole extends panelMenu.Button
 
         // Restart status request cycle since we just got an up-to-date status
         Mainloop.source_remove(PiHoleExt.Button.StatusEvent);
-        this.StatusEvent = GLib.timeout_add_seconds(0, this.UpdateTime, Lang.bind(this, function()  {
+        this.StatusEvent = GLib.timeout_add_seconds(0, this.UpdateTime, () => {
             this.getPiHoleStatus();
             return 0;
-        }));
+        });
     }
 
 
@@ -405,7 +404,7 @@ function disable()
     this.SettingChangedHandlerIds = null;
 
     // Finish off
-    mainloop.source_remove(PiHoleExt.Button.StatusEvent);
+    Mainloop.source_remove(PiHoleExt.Button.StatusEvent);
     PiHoleExt.Button.destroy();
     PiHoleExt.Button = null;
 }

@@ -11,13 +11,13 @@ const Common = Metadata.imports.common;
 
 
 // Settings instance
-let settings;
+let PiHoleSettings = null;
 
 
 // Prep
 function init()
 {
-    settings = Common.getSettings(Metadata);
+    PiHoleSettings = Common.getSettings(Metadata);
     Common.initTranslations(Metadata);
 }
 
@@ -38,9 +38,9 @@ function buildPrefsWidget()
         let widget = new Gtk.SpinButton({ tooltip_text: _("How long to pause Pi-Hole for when it is paused") });
         widget.set_range( 1, 900 );
         widget.set_increments( 1, 5 );
-        widget.set_value( settings.get_uint( Common.DISABLE_TIME_SETTING ) );
+        widget.set_value( PiHoleSettings.get_uint( Common.DISABLE_TIME_SETTING ) );
         widget.connect( 'value-changed', function() {
-            settings.set_uint( Common.DISABLE_TIME_SETTING, widget.get_value() );
+            PiHoleSettings.set_uint( Common.DISABLE_TIME_SETTING, widget.get_value() );
         });
         _addSetting( prefs, _("Pause time (seconds)"), widget );
     }
@@ -49,27 +49,27 @@ function buildPrefsWidget()
         let widget = new Gtk.SpinButton({ tooltip_text: _("Rate at which Pi-Hole is normally polled for its status") });
         widget.set_range( 1, 900 );
         widget.set_increments( 1, 5 );
-        widget.set_value( settings.get_uint( Common.UPDATE_RATE_SETTING ) );
+        widget.set_value( PiHoleSettings.get_uint( Common.UPDATE_RATE_SETTING ) );
         widget.connect( 'value-changed', function() {
-            settings.set_uint( Common.UPDATE_RATE_SETTING, widget.get_value() );
+            PiHoleSettings.set_uint( Common.UPDATE_RATE_SETTING, widget.get_value() );
         });
         _addSetting( prefs, _("Update rate (seconds)"), widget );
     }
 
     {
         let widget = new Gtk.Entry({ width_chars: 50, tooltip_text: _("API key of pi-hole from settings/api page") });
-        widget.set_text( settings.get_string( Common.API_KEY_SETTING ) );
+        widget.set_text( PiHoleSettings.get_string( Common.API_KEY_SETTING ) );
         widget.connect( 'changed', function() {
-            settings.set_string( Common.API_KEY_SETTING, widget.get_text() );
+            PiHoleSettings.set_string( Common.API_KEY_SETTING, widget.get_text() );
         });
         _addSetting( prefs, _("API key"), widget );
     }
 
     {
         let widget = new Gtk.Entry({ width_chars: 50, tooltip_text: _("URL of pi-hole admin page for API access") });
-        widget.set_text( settings.get_string( Common.URL_SETTING ) );
+        widget.set_text( PiHoleSettings.get_string( Common.URL_SETTING ) );
         widget.connect( 'changed', function() {
-            settings.set_string( Common.URL_SETTING, widget.get_text() );
+            PiHoleSettings.set_string( Common.URL_SETTING, widget.get_text() );
         });
         _addSetting( prefs, _("Pi-Hole URL"), widget );
     }
