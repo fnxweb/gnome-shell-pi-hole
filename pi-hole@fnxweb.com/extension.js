@@ -1,16 +1,9 @@
 // Import
-const Atk = imports.gi.Atk;
+const { Atk, Gio, GLib, GObject, Gtk, Soup, St } = imports.gi;
+const { main, panelMenu, popupMenu } = imports.ui;
 const ExtensionUtils = imports.misc.extensionUtils
-const GLib = imports.gi.GLib;
-const Gio = imports.gi.Gio;
-const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
-const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
-const PanelMenu = imports.ui.panelMenu;
-const PopupMenu = imports.ui.popupMenu;
-const Soup = imports.gi.Soup;
-const St = imports.gi.St;
 
 const IndicatorName = 'pi-hole';
 
@@ -35,50 +28,50 @@ const _ = Gettext.gettext;
 
 
 // Implement MythTV class
-const PiHole = new Lang.Class(
+const PiHole = GObject.registerClass(
+class PiHole extends panelMenu.Button
 {
-    Name    : IndicatorName,
-    Extends : PanelMenu.Button,
-
-    // Debug
-    Debug: false,
-
-    // Status URL
-    Url: '',
-
-    // API key
-    ApiKey : '',
-
-    // Timer period (seconds)
-    UpdateTime : 0,
-
-    // Disable duration (seconds)
-    DisableTime : 0,
-
-    // Updates
-    StatusEvent: null,
-
-    // Current status
-    StatusField: null,
-    IconStatus: "",
-    Status: "unknown",
-
-    // Buttons
-    Icon: null,
-    PauseButton: null,
-    EnableDisableButton: null,
-    SettingsButton: null,
-
-    // Watch settings
-    SettingChangedHandlerIds: null,
-
-
     // ctor
-    _init : function()
+    _init ()
     {
         // Core setup
-        this.parent(null, IndicatorName);
+        super._init( null, IndicatorName );
         Common.initTranslations( PiHoleExt.Metadata );
+
+        this.Name    = IndicatorName;
+        this.Extends = panelMenu.Button;
+
+        // Debug
+        this.Debug= false;
+
+        // Status URL
+        this.Url= '';
+
+        // API key
+        this.ApiKey = '';
+
+        // Timer period (seconds)
+        this.UpdateTime = 0;
+
+        // Disable duration (seconds)
+        this.DisableTime = 0;
+
+        // Updates
+        this.StatusEvent= null;
+
+        // Current status
+        this.StatusField= null;
+        this.IconStatus= "";
+        this.Status= "unknown";
+
+        // Buttons
+        this.Icon= null;
+        this.PauseButton= null;
+        this.EnableDisableButton= null;
+        this.SettingsButton= null;
+
+        // Watch settings
+        this.SettingChangedHandlerIds= null;
 
         // Settings
         let settings = Common.getSettings( PiHoleExt.Metadata );
@@ -113,10 +106,10 @@ const PiHole = new Lang.Class(
 
 
         // Prep. menu
-        if (Main.panel._menus == undefined)
-            Main.panel.menuManager.addMenu(this.menu);
+        if (main.panel._menus == undefined)
+            main.panel.menuManager.addMenu(this.menu);
         else
-            Main.panel._menus.addMenu(this.menu);
+            main.panel._menus.addMenu(this.menu);
 
 
         // Add status popup
@@ -130,17 +123,17 @@ const PiHole = new Lang.Class(
         this.addMenuItem(box);
 
         // .. sep
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addMenuItem(new popupMenu.PopupSeparatorMenuItem());
 
         // .. control buttons        
-        this.PauseButton = new PopupMenu.PopupMenuItem(_("Pause temporarily"), {style_class:"pihole-indent"});
+        this.PauseButton = new popupMenu.PopupMenuItem(_("Pause temporarily"), {style_class:"pihole-indent"});
         this.PauseButton.connect('activate', Lang.bind(this, function()  {
             this.onPauseButton();
             return 0;
         }));
         this.menu.addMenuItem(this.PauseButton);
         //
-        this.EnableDisableButton = new PopupMenu.PopupMenuItem(_("Disable"), {style_class:"pihole-indent"});
+        this.EnableDisableButton = new popupMenu.PopupMenuItem(_("Disable"), {style_class:"pihole-indent"});
         this.EnableDisableButton.connect('activate', Lang.bind(this, function()  {
             this.onEnableDisableButton();
             return 0;
@@ -148,10 +141,10 @@ const PiHole = new Lang.Class(
         this.menu.addMenuItem(this.EnableDisableButton);
 
         // .. sep
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addMenuItem(new popupMenu.PopupSeparatorMenuItem());
 
         // .. settings
-        this.SettingsButton = new PopupMenu.PopupMenuItem(_("Settings"), {style_class:"pihole-indent"});
+        this.SettingsButton = new popupMenu.PopupMenuItem(_("Settings"), {style_class:"pihole-indent"});
         this.SettingsButton.connect('activate', Lang.bind(this, function()  {
             this.onSettingsButton();
             return 0;
@@ -176,35 +169,35 @@ const PiHole = new Lang.Class(
                 PiHoleExt.Button.DisableTime = PiHoleExt.Settings.get_uint( Common.DISABLE_TIME_SETTING );
             }))
         ];
-    },
+    }
 
 
     // Debug
-    dprint: function(msg)
+    dprint(msg)
     {
         if (this.Debug)
             print("PiHole: " + msg);
-    },
+    }
 
 
     // Error
-    eprint: function(msg)
+    eprint(msg)
     {
         global.log("PiHole: " + msg);
-    },
+    }
 
 
     // Add an item to the “menu”
-    addMenuItem: function(item)
+    addMenuItem(item)
     {
-        let menuitem = new PopupMenu.PopupBaseMenuItem({ reactive:false });
+        let menuitem = new popupMenu.PopupBaseMenuItem({ reactive:false });
         menuitem.actor.add_actor( item );
         this.menu.addMenuItem( menuitem );
-    },
+    }
 
 
     // Set correct icon
-    setIcon: function()
+    setIcon()
     {
         if (this.Status == this.IconStatus)
             return;
@@ -216,11 +209,11 @@ const PiHole = new Lang.Class(
             this.Icon.set_gicon( this.getCustomIcon('pi-hole-disabled-symbolic') );
         else
             this.Icon.set_gicon( this.getCustomIcon('pi-hole-unknown-symbolic') );
-    },
+    }
 
 
     // Get custom icon from theme or file
-    getCustomIcon: function(icon_name)
+    getCustomIcon(icon_name)
     {
         let icon_path = PiHoleExt.Metadata.dir.get_child('icons').get_child( icon_name + ".svg" ).get_path();
         let theme = Gtk.IconTheme.get_default();
@@ -232,11 +225,11 @@ const PiHole = new Lang.Class(
         }
         this.dprint("setting new icon from " + icon_path);
         return Gio.FileIcon.new( Gio.File.new_for_path( icon_path ) );
-    },
+    }
 
 
     // Request pi-hole status
-    getPiHoleStatus: function()
+    getPiHoleStatus()
     {
         this.dprint("getting pi-hole status");
         try
@@ -267,11 +260,11 @@ const PiHole = new Lang.Class(
         {
             this.eprint("exception requesting status: " + err);
         }
-    },
+    }
 
 
     // Pause pi-hole
-    onPauseButton: function()
+    onPauseButton()
     {
         // Do op
         this.dprint("pausing pi-hole");
@@ -283,11 +276,11 @@ const PiHole = new Lang.Class(
             this.getPiHoleStatus();
             return 0;
         }));
-    },
+    }
 
 
     // Enable or disable pi-hole
-    onEnableDisableButton: function()
+    onEnableDisableButton()
     {
         // Do correct op
         let op;
@@ -309,11 +302,11 @@ const PiHole = new Lang.Class(
             this.getPiHoleStatus();
             return 0;
         }));
-    },
+    }
 
 
     // Enable or disable pi-hole given op
-    enableDisable: function( op )
+    enableDisable( op )
     {
         this.dprint("requesting " + op);
         try
@@ -339,11 +332,11 @@ const PiHole = new Lang.Class(
             this.eprint("exception requesting enable/disable: " + err);
             this.newPiHoleStatus("unknown");
         }
-    },
+    }
 
 
     // Handle status
-    processPiHoleStatus: function(data)
+    processPiHoleStatus(data)
     {
         this.dprint("processing status");
 
@@ -360,11 +353,11 @@ const PiHole = new Lang.Class(
             this.eprint("exception processing status [" + data.toString() + "]: " + err);
             this.newPiHoleStatus("unknown");
         }
-    },
+    }
 
 
     // New status
-    newPiHoleStatus: function(newstatus)
+    newPiHoleStatus(newstatus)
     {
         if (newstatus === undefined)
             newstatus = "undefined";
@@ -378,15 +371,15 @@ const PiHole = new Lang.Class(
             this.EnableDisableButton.label.set_text("Disable");
         else
             this.EnableDisableButton.label.set_text("Enable");
-    },
+    }
 
 
     // Open settings
-    onSettingsButton: function()
+    onSettingsButton()
     {
         imports.misc.util.spawn(['gnome-extensions', 'prefs', PiHoleExt.Metadata.uuid]);
     }
-})
+});
 
 
 // Setup
@@ -399,7 +392,7 @@ function init()
 function enable()
 {
     PiHoleExt.Button = new PiHole();
-    Main.panel.addToStatusArea( IndicatorName, PiHoleExt.Button );
+    main.panel.addToStatusArea( IndicatorName, PiHoleExt.Button );
 }
 
 
@@ -412,7 +405,7 @@ function disable()
     this.SettingChangedHandlerIds = null;
 
     // Finish off
-    Mainloop.source_remove(PiHoleExt.Button.StatusEvent);
+    mainloop.source_remove(PiHoleExt.Button.StatusEvent);
     PiHoleExt.Button.destroy();
     PiHoleExt.Button = null;
 }
