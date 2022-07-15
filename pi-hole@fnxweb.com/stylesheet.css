@@ -1,11 +1,6 @@
-StLabel
+.pihole-status
 {
-  color: #ffffff;
-}
-
-.pihole-label
-{
-  color: #999999;
+  font-weight: bold;
 }
 
 .pihole-indent

@@ -15,7 +15,7 @@ const _ = Gettext.gettext;
 let PiHoleExtButton = null;
 
 
-// Implement MythTV class
+// Implement PiHole class
 const PiHole = GObject.registerClass(
 class PiHole extends panelMenu.Button
 {
@@ -101,9 +101,9 @@ class PiHole extends panelMenu.Button
 
         // .. status
         let box = new St.BoxLayout({style_class:'pihole-heading-row'});
-        let label = new St.Label({style_class:'pihole-label', text:_("Pi-Hole Status") + ":  "});
+        let label = new St.Label({style_class:'stage pihole-label', text:_("Pi-Hole Status") + ":  "});
         box.add_actor(label);
-        this.StatusField = new St.Label({text:this.Status});
+        this.StatusField = new St.Label({style_class:'stage pihole-status', text:this.Status});
         box.add_actor(this.StatusField);
         this.addMenuItem(box);
 
