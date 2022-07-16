@@ -100,12 +100,9 @@ class PiHole extends panelMenu.Button
         // Add status popup
 
         // .. status
-        let box = new St.BoxLayout({style_class:'pihole-heading-row'});
-        let label = new St.Label({style_class:'stage pihole-label', text:_("Pi-Hole Status") + ":  "});
-        box.add_actor(label);
-        this.StatusField = new St.Label({style_class:'stage pihole-status', text:this.Status});
-        box.add_actor(this.StatusField);
-        this.addMenuItem(box);
+        this.StatusField = new popupMenu.PopupMenuItem("", {style_class:"pihole-status-line"});
+        this.setStatusText();
+        this.menu.addMenuItem(this.StatusField);
 
         // .. sep
         this.menu.addMenuItem(new popupMenu.PopupSeparatorMenuItem());
@@ -350,12 +347,20 @@ class PiHole extends panelMenu.Button
 
         // Update statuses
         this.dprint("got status " + this.Status);
-        this.StatusField.set_text( this.Status );
+        this.setStatusText();
         this.setIcon();
         if (this.Status == "enabled")
-            this.EnableDisableButton.label.set_text("Disable");
+            this.EnableDisableButton.label.set_text(_("Disable"));
         else
-            this.EnableDisableButton.label.set_text("Enable");
+            this.EnableDisableButton.label.set_text(_("Enable"));
+    }
+
+
+    // Status text
+    setStatusText()
+    {
+        let clutter_text = this.StatusField.label.get_clutter_text();
+        clutter_text.set_markup( _("Pi-Hole Status") + ":  <b>" + this.Status + "</b>" );
     }
 
 
