@@ -102,6 +102,7 @@ class PiHole extends panelMenu.Button
         // .. status
         this.StatusField = new popupMenu.PopupMenuItem("", {style_class:"pihole-status-line"});
         this.setStatusText();
+        this.StatusField.reactive = false;
         this.menu.addMenuItem(this.StatusField);
 
         // .. sep
