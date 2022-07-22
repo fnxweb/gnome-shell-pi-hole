@@ -100,10 +100,9 @@ class PiHole extends panelMenu.Button
         // Add status popup
 
         // .. status
-        this.StatusField = new popupMenu.PopupMenuItem("", {style_class:"pihole-status-line"});
+        this.StatusField = new St.Label({style_class:'stage popup-menu pihole-label', text:""});
         this.setStatusText();
-        this.StatusField.reactive = false;
-        this.menu.addMenuItem(this.StatusField);
+        this.addMenuItem( this.StatusField );
 
         // .. sep
         this.menu.addMenuItem(new popupMenu.PopupSeparatorMenuItem());
@@ -360,7 +359,7 @@ class PiHole extends panelMenu.Button
     // Status text
     setStatusText()
     {
-        let clutter_text = this.StatusField.label.get_clutter_text();
+        let clutter_text = this.StatusField.get_clutter_text();
         clutter_text.set_markup( _("Pi-Hole Status") + ":  <b>" + this.Status + "</b>" );
     }
 
