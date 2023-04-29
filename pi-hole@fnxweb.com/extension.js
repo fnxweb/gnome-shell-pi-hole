@@ -42,6 +42,9 @@ class PiHole extends panelMenu.Button
         // Disable duration (seconds)
         this.DisableTime = 0;
 
+        // Processing
+        this.Decoder = new TextDecoder('utf8');
+
         // Updates
         this.StatusEvent= null;
 
@@ -80,9 +83,7 @@ class PiHole extends panelMenu.Button
         }
 
         // Create a Soup session with which to do requests
-        this.SoupSession = new Soup.SessionAsync();
-        if (Soup.Session.prototype.add_feature != null)
-            Soup.Session.prototype.add_feature.call(this.SoupSession, new Soup.ProxyResolverDefault());
+        this.SoupSession = new Soup.Session();
 
         // Create button/icon
         this.Icon = new St.Icon({ style_class: 'system-status-icon' });
@@ -220,17 +221,23 @@ class PiHole extends panelMenu.Button
             let me = this;
             let url = this.Url + "/api.php?status&auth=" + this.ApiKey;
             let request = Soup.Message.new('GET', url);
-            this.SoupSession.queue_message(request, function(soup, message) {
-                if (message.status_code == 200)
-                {
-                    me.processPiHoleStatus(request.response_body.data);
-                }
-                else
-                {
-                    me.eprint("error retrieving status: " + message.status_code);
-                    me.newPiHoleStatus("unknown");
-                }
-            });
+            this.SoupSession.send_and_read_async(
+                request,
+                GLib.PRIORITY_DEFAULT,
+                null,
+                (session, result) => {
+                    if (request.get_status() === Soup.Status.OK)
+                    {
+                        let bytes = session.send_and_read_finish(result);
+                        let response = this.Decoder.decode(bytes.get_data());
+                        me.processPiHoleStatus(response);
+                    }
+                    else
+                    {
+                        me.eprint("error retrieving status: " + request.get_status());
+                        me.newPiHoleStatus("unknown");
+                    }
+                });
 
             // Now do it again in a bit
             this.StatusEvent = GLib.timeout_add_seconds(0, this.UpdateTime, () => {
@@ -297,17 +304,23 @@ class PiHole extends panelMenu.Button
             let me = this;
             let url = this.Url + "/api.php?" + op + "&auth=" + this.ApiKey;
             let request = Soup.Message.new('GET', url);
-            this.SoupSession.queue_message(request, function(soup, message) {
-                if (message.status_code == 200)
-                {
-                    me.processPiHoleStatus(request.response_body.data);
-                }
-                else
-                {
-                    me.eprint("error requesting disable: " + message.status_code);
-                    me.newPiHoleStatus("unknown");
-                }
-            });
+            this.SoupSession.send_and_read_async(
+                request,
+                GLib.PRIORITY_DEFAULT,
+                null,
+                (session, result) => {
+                    if (request.get_status() === Soup.Status.OK)
+                    {
+                        let bytes = session.send_and_read_finish(result);
+                        let response = this.Decoder.decode(bytes.get_data());
+                        me.processPiHoleStatus(response);
+                    }
+                    else
+                    {
+                        me.eprint("error requesting disable: " + request.get_status());
+                        me.newPiHoleStatus("unknown");
+                    }
+                });
         }
         catch (err)
         {

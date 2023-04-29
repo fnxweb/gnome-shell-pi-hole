@@ -1,5 +1,5 @@
 {
-    "shell-version": ["42","41"],
+    "shell-version": ["43"],
     "uuid": "pi-hole@fnxweb.com",
     "name": "pi-hole",
     "url" : "https://github.com/fnxweb/gnome-shell-pi-hole",
