@@ -85,6 +85,16 @@ class PiHole extends panelMenu.Button
         // Create a Soup session with which to do requests
         this.SoupSession = new Soup.Session();
 
+        // Access icon theme and keep it up to date
+        const stsettings = St.Settings.get();
+        this.IconTheme = new Gtk.IconTheme();
+        this.IconTheme.set_theme_name( stsettings.gtk_icon_theme );
+        let this_ = this;
+        stsettings.connect( 'notify::gtk-icon-theme', (settings_,key_) => {
+            this_.IconTheme.set_theme_name( settings_.gtk_icon_theme );
+            this_.setIcon();
+        });
+
         // Create button/icon
         this.Icon = new St.Icon({ style_class: 'system-status-icon' });
         this.add_child( this.Icon );
@@ -198,14 +208,15 @@ class PiHole extends panelMenu.Button
     // Get custom icon from theme or file
     getCustomIcon(icon_name)
     {
-        let icon_path = PiHoleExtMetadata.dir.get_child('icons').get_child( icon_name + ".svg" ).get_path();
-        let theme = Gtk.IconTheme.get_default();
-        if (theme)
+        // Themed?
+        if (this.IconTheme.has_icon(icon_name))
         {
-            let theme_icon = theme.lookup_icon( icon_name, -1, 2 );
-            if (theme_icon)
-               icon_path = theme_icon.get_filename();
+            this.dprint("setting new icon " + icon_name + " from theme");
+            return Gio.ThemedIcon({name: icon_name});
         }
+
+        // Falback to included icons
+        let icon_path = PiHoleExtMetadata.dir.get_child('icons').get_child( icon_name + ".svg" ).get_path();
         this.dprint("setting new icon from " + icon_path);
         return Gio.FileIcon.new( Gio.File.new_for_path( icon_path ) );
     }
