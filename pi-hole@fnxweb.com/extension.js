@@ -1,37 +1,45 @@
 // Import
-const { Atk, Gio, GLib, GObject, Gtk, Soup, St } = imports.gi;
-const { main, panelMenu, popupMenu } = imports.ui;
-const ExtensionUtils = imports.misc.extensionUtils
-const Mainloop = imports.mainloop;
+import Atk from 'gi://Atk';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk';
+import Soup from 'gi://Soup';
+import St from 'gi://St';
+import * as main from 'resource:///org/gnome/shell/ui/main.js';
+import * as panelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
+import * as popupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
+import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
+
 
 const IndicatorName = 'pi-hole';
 
 
 // Common
-const PiHoleExtMetadata = ExtensionUtils.getCurrentExtension();
-const Common = PiHoleExtMetadata.imports.common;
-const Gettext = imports.gettext.domain( PiHoleExtMetadata.metadata['gettext-domain'] );
-const _ = Gettext.gettext;
+import * as Common from './common.js';
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 let PiHoleExtButton = null;
 
 
-// Implement PiHole class
+// Implement PiHole button class
 const PiHole = GObject.registerClass(
 class PiHole extends panelMenu.Button
 {
     // ctor
-    _init ()
+    _init (ext)
     {
         // Core setup
         super._init( null, IndicatorName );
-        ExtensionUtils.initTranslations();
         this.Name = IndicatorName;
 
+        // Our extension
+        this.Extension = ext;
+
         // Debug
-        this.Debug= false;
+        this.Debug = false;
 
         // Status URL
-        this.Url= '';
+        this.Url = '';
 
         // API key
         this.ApiKey = '';
@@ -63,7 +71,7 @@ class PiHole extends panelMenu.Button
         this.SettingChangedHandlerIds= null;
 
         // Settings
-        this.Settings = ExtensionUtils.getSettings();
+        this.Settings = ext.getSettings();
         this.Url = this.Settings.get_string( Common.URL_SETTING );
         this.ApiKey = this.Settings.get_string( Common.API_KEY_SETTING );
         this.UpdateTime = this.Settings.get_uint( Common.UPDATE_RATE_SETTING );
@@ -201,7 +209,7 @@ class PiHole extends panelMenu.Button
         // TBD deal with icon themes via St.IconTheme
 
         // Falback to included icons
-        let icon_path = PiHoleExtMetadata.dir.get_child('icons').get_child( icon_name + ".svg" ).get_path();
+        let icon_path = this.Extension.dir.get_child('icons').get_child( icon_name + ".svg" ).get_path();
         this.dprint("setting new icon from " + icon_path);
         return Gio.FileIcon.new( Gio.File.new_for_path( icon_path ) );
     }
@@ -256,7 +264,7 @@ class PiHole extends panelMenu.Button
         this.enableDisable( "disable=" + this.DisableTime.toString() );
 
         // Now ask for status again a second after it should be re-enabled
-        Mainloop.source_remove(PiHoleExtButton.StatusEvent);
+        Glib.source_remove(PiHoleExtButton.StatusEvent);
         this.StatusEvent = GLib.timeout_add_seconds(0, this.DisableTime + 1, () => {
             this.getPiHoleStatus();
             return 0;
@@ -282,7 +290,7 @@ class PiHole extends panelMenu.Button
         this.enableDisable( op );
 
         // Restart status request cycle since we just got an up-to-date status
-        Mainloop.source_remove(PiHoleExtButton.StatusEvent);
+        Glib.source_remove(PiHoleExtButton.StatusEvent);
         this.StatusEvent = GLib.timeout_add_seconds(0, this.UpdateTime, () => {
             this.getPiHoleStatus();
             return 0;
@@ -376,35 +384,40 @@ class PiHole extends panelMenu.Button
     // Open settings
     onSettingsButton()
     {
-        ExtensionUtils.openPrefs();
+        this.Extension.openPreferences();
     }
 });
 
 
-// Setup
-function init()
+
+// PiHole extension  (TBD separate out the button code into distinct ext/button stuff)
+export default class PiHoleExtension extends Extension
 {
-}
+    constructor(metadata)
+    {
+        super(metadata);
+    }
 
 
-// Turn on
-function enable()
-{
-    PiHoleExtButton = new PiHole();
-    main.panel.addToStatusArea( IndicatorName, PiHoleExtButton );
-}
+    // Turn on
+    enable()
+    {
+        PiHoleExtButton = new PiHole(this);
+        main.panel.addToStatusArea( IndicatorName, PiHoleExtButton );
+    }
 
 
-// Turn off
-function disable()
-{
-    // Disconnects the setting listeners
-    for (let id in this.SettingChangedHandlerIds)
-        this._settings.disconnect(this.SettingChangedHandlerIds[id]);
-    this.SettingChangedHandlerIds = null;
+    // Turn off
+    disable()
+    {
+        // Disconnects the setting listeners
+        for (let id in this.SettingChangedHandlerIds)
+            this._settings.disconnect(this.SettingChangedHandlerIds[id]);
+        this.SettingChangedHandlerIds = null;
 
-    // Finish off
-    Mainloop.source_remove(PiHoleExtButton.StatusEvent);
-    PiHoleExtButton.destroy();
-    PiHoleExtButton = null;
+        // Finish off
+        Glib.source_remove(PiHoleExtButton.StatusEvent);
+        PiHoleExtButton.destroy();
+        PiHoleExtButton = null;
+    }
 }
