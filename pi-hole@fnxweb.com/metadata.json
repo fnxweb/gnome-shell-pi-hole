@@ -6,5 +6,5 @@
     "description": "Status and basic controls of local Pi-Hole",
     "settings-schema": "org.gnome.shell.extensions.fnxweb-pi-hole",
     "gettext-domain": "gnome-shell-extension-fnxweb-pi-hole",
-    "version": 9
+    "version": 10
 }

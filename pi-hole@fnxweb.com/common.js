@@ -1,5 +1,5 @@
 // settings labels
-export var URL_SETTING = 'url';
-export var API_KEY_SETTING = 'api-key';
-export var UPDATE_RATE_SETTING = 'update-rate';
-export var DISABLE_TIME_SETTING = 'disable-time';
+export const URL_SETTING = 'url';
+export const API_KEY_SETTING = 'api-key';
+export const UPDATE_RATE_SETTING = 'update-rate';
+export const DISABLE_TIME_SETTING = 'disable-time';

@@ -3,7 +3,6 @@ import Atk from 'gi://Atk';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
-import Gtk from 'gi://Gtk';
 import Soup from 'gi://Soup';
 import St from 'gi://St';
 import * as main from 'resource:///org/gnome/shell/ui/main.js';
@@ -244,6 +243,8 @@ class PiHole extends panelMenu.Button
                 });
 
             // Now do it again in a bit
+            if (this.StatusEvent)
+                GLib.source_remove( this.StatusEvent );
             this.StatusEvent = GLib.timeout_add_seconds(0, this.UpdateTime, () => {
                 this.getPiHoleStatus();
                 return 0;
@@ -264,7 +265,8 @@ class PiHole extends panelMenu.Button
         this.enableDisable( "disable=" + this.DisableTime.toString() );
 
         // Now ask for status again a second after it should be re-enabled
-        Glib.source_remove(PiHoleExtButton.StatusEvent);
+        if (this.StatusEvent)
+            GLib.source_remove( this.StatusEvent );
         this.StatusEvent = GLib.timeout_add_seconds(0, this.DisableTime + 1, () => {
             this.getPiHoleStatus();
             return 0;
@@ -290,7 +292,8 @@ class PiHole extends panelMenu.Button
         this.enableDisable( op );
 
         // Restart status request cycle since we just got an up-to-date status
-        Glib.source_remove(PiHoleExtButton.StatusEvent);
+        if (this.StatusEvent)
+            GLib.source_remove( this.StatusEvent );
         this.StatusEvent = GLib.timeout_add_seconds(0, this.UpdateTime, () => {
             this.getPiHoleStatus();
             return 0;
@@ -344,7 +347,7 @@ class PiHole extends panelMenu.Button
         try
         {
             // Process results string
-            var obj = JSON.parse( data.toString() );
+            let obj = JSON.parse( data.toString() );
             this.newPiHoleStatus( obj.status );
         }
         catch (err)
@@ -416,7 +419,8 @@ export default class PiHoleExtension extends Extension
         this.SettingChangedHandlerIds = null;
 
         // Finish off
-        Glib.source_remove(PiHoleExtButton.StatusEvent);
+        if (PiHoleExtButton.StatusEvent )
+            Glib.source_remove(PiHoleExtButton.StatusEvent);
         PiHoleExtButton.destroy();
         PiHoleExtButton = null;
     }
