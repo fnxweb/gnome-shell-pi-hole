@@ -1,5 +1,4 @@
 // Import
-import Atk from 'gi://Atk';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
@@ -99,7 +98,7 @@ class PiHole extends panelMenu.Button
 
 
         // Prep. menu
-        if (main.panel._menus == undefined)
+        if (main.panel._menus === undefined)
             main.panel.menuManager.addMenu(this.menu);
         else
             main.panel._menus.addMenu(this.menu);
@@ -173,7 +172,7 @@ class PiHole extends panelMenu.Button
     // Error
     eprint(msg)
     {
-        global.log("PiHole: " + msg);
+        console.log("PiHole: " + msg);
     }
 
 
@@ -189,13 +188,13 @@ class PiHole extends panelMenu.Button
     // Set correct icon
     setIcon()
     {
-        if (this.Status == this.IconStatus)
+        if (this.Status === this.IconStatus)
             return;
 
         this.IconStatus = this.Status;
-        if (this.IconStatus == "enabled")
+        if (this.IconStatus === "enabled")
             this.Icon.set_gicon( this.getCustomIcon('pi-hole-symbolic') );
-        else if (this.IconStatus == "disabled")
+        else if (this.IconStatus === "disabled")
             this.Icon.set_gicon( this.getCustomIcon('pi-hole-disabled-symbolic') );
         else
             this.Icon.set_gicon( this.getCustomIcon('pi-hole-unknown-symbolic') );
@@ -279,7 +278,7 @@ class PiHole extends panelMenu.Button
     {
         // Do correct op
         let op;
-        if (this.Status == "enabled")
+        if (this.Status === "enabled")
         {
             this.dprint("disabling pi-hole (currently " + this.Status + ")");
             op = "disable";
@@ -369,7 +368,7 @@ class PiHole extends panelMenu.Button
         this.dprint("got status " + this.Status);
         this.setStatusText();
         this.setIcon();
-        if (this.Status == "enabled")
+        if (this.Status === "enabled")
             this.EnableDisableButton.label.set_text(_("Disable"));
         else
             this.EnableDisableButton.label.set_text(_("Enable"));
@@ -420,7 +419,7 @@ export default class PiHoleExtension extends Extension
 
         // Finish off
         if (PiHoleExtButton.StatusEvent )
-            Glib.source_remove(PiHoleExtButton.StatusEvent);
+            GLib.source_remove(PiHoleExtButton.StatusEvent);
         PiHoleExtButton.destroy();
         PiHoleExtButton = null;
     }

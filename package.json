@@ -1,0 +1,15 @@
+{
+  "name": "pi-hole",
+  "version": "",
+  "description": "Pi-Hole GNOME Shell Extension",
+  "main": "pi-hole@fnxweb.com/extension.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^8.56.0"
+  },
+  "type": "module"
+}

@@ -56,4 +56,18 @@ to **~/.xsession-errors** (or **journalctl /usr/bin/gnome-shell**).
 Don't forget to turn the debug back off later.
 
 
+### ESLint
+
+I'm trying to use ESLint to sanity check the code so will check in some of what I think I need.
+
+To install:
+```
+npm init @eslint/config
+```
+To run:
+```
+npx eslint pi-hole@fnxweb.com
+```
+
+
 © Neil Bird  git@fnxweb.com
