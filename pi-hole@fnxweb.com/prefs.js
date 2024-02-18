@@ -24,7 +24,7 @@ export default class PiHoleExtensionPreferences extends ExtensionPreferences
 
         // Settings
         {
-            let widget = new Gtk.Entry({ hexpand: true });
+            let widget = new Gtk.Entry({ width_chars: 20, hexpand: true });
             widget.set_text( settings.get_string( Common.URL_SETTING ) );
             widget.connect( 'changed', function() {
                 settings.set_string( Common.URL_SETTING, widget.get_text() );
@@ -33,7 +33,7 @@ export default class PiHoleExtensionPreferences extends ExtensionPreferences
         }
 
         {
-            let widget = new Gtk.Entry({ hexpand: true });
+            let widget = new Gtk.Entry({ width_chars: 20, hexpand: true });
             widget.set_text( settings.get_string( Common.API_KEY_SETTING ) );
             widget.connect( 'changed', function() {
                 settings.set_string( Common.API_KEY_SETTING, widget.get_text() );

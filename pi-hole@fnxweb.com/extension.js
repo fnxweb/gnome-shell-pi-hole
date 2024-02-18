@@ -24,7 +24,7 @@ const PiHole = GObject.registerClass(
 class PiHole extends panelMenu.Button
 {
     // ctor
-    _init (ext)
+    _init( ext )
     {
         // Core setup
         super._init( null, IndicatorName );
@@ -414,12 +414,12 @@ export default class PiHoleExtension extends Extension
     {
         // Disconnects the setting listeners
         for (let id in this.SettingChangedHandlerIds)
-            this._settings.disconnect(this.SettingChangedHandlerIds[id]);
+            this._settings.disconnect( this.SettingChangedHandlerIds[id] );
         this.SettingChangedHandlerIds = null;
 
         // Finish off
-        if (PiHoleExtButton.StatusEvent )
-            GLib.source_remove(PiHoleExtButton.StatusEvent);
+        if (PiHoleExtButton.StatusEvent)
+            GLib.source_remove( PiHoleExtButton.StatusEvent );
         PiHoleExtButton.destroy();
         PiHoleExtButton = null;
     }
