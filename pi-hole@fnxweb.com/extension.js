@@ -180,7 +180,7 @@ class PiHole extends panelMenu.Button
     addMenuItem(item)
     {
         let menuitem = new popupMenu.PopupBaseMenuItem({ reactive:false });
-        menuitem.actor.add_actor( item );
+        menuitem.actor.add_child( item );
         this.menu.addMenuItem( menuitem );
     }
 
