@@ -1,3 +1,6 @@
+# THIS REPO HAS BEEN RELOCATED
+The new location is https://codeberg.org/fnxweb/gnome-shell-pi-hole
+___
 GNOME Shell Pi-Hole
 ===================
 
